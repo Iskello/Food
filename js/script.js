@@ -112,8 +112,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 	// Modal
 
-	const openModal = document.querySelectorAll('[data-modal]'),
-		closeModal = document.querySelector('[data-close]'),
+	const openModal = document.querySelectorAll('[data-modal]'),		
 		modal = document.querySelector('.modal');
 
 	/* openModal.forEach((element) => {
@@ -154,13 +153,12 @@ window.addEventListener('DOMContentLoaded', () => {
 		btn.addEventListener('click', openModalWindow);
 	});
 
-	//закриття вікна при кліку на хрестик
-	closeModal.addEventListener('click', closeModalWindow);
+	
 
-	//закриття вікна при кліку на підкладку (оверлей)
+	//закриття вікна при кліку на підкладку (оверлей) та на хрестик
 	modal.addEventListener('click', (event) => {
 		//if(event.target && event.target.classList.contains('modal'))
-		if (event.target === modal) {
+		if (event.target === modal || event.target.getAttribute('data-close') == '') {
 			closeModalWindow();
 		}
 	});
@@ -173,17 +171,17 @@ window.addEventListener('DOMContentLoaded', () => {
 	});
 
 	//вспливання модального вікна через деякий час
-	/* const modalTimerId = setTimeout(openModalWindow, 10000); */
+	const modalTimerId = setTimeout(openModalWindow, 50000);
 
 	//вспливання модального вікна коли ми долистуємо сторінку до кінця
-	function showModalByScroll() {
-		if (window.pageYOffset + document.documentElement.clientHeight >= document.documentElement.scrollHeight -1) {
+	/* function showModalByScroll() {
+		if (window.pageYOffset + document.documentElement.clientHeight >= document.documentElement.scrollHeight) {
 			openModalWindow();
 			window.removeEventListener('scroll', showModalByScroll);
 		}
 	}
 
-	window.addEventListener('scroll', showModalByScroll);
+	window.addEventListener('scroll', showModalByScroll); */
 
 
 	//вспливання модального вікна через 1500px
@@ -281,7 +279,95 @@ window.addEventListener('DOMContentLoaded', () => {
 	).render();
 
 
+	
+	
 
+
+
+
+	//Відправка даних з форми
+	
+	const forms = document.querySelectorAll('form');
+	const message = {
+		loading: 'Завантаження',
+		success: 'Дякуємо! Невдовзі ми з Вами зв\'яжемося',
+		failure: 'Щось пішло не так...'
+	};
+
+	function postData(form) {
+		form.addEventListener('submit', (e) => {
+			e.preventDefault();
+
+			const statusMessage = document.createElement('div');
+			statusMessage.classList.add('status');
+			statusMessage.textContent = message.loading;
+			form.append(statusMessage);
+
+			const request = new XMLHttpRequest();
+			request.open('POST', 'server.php');
+			request.setRequestHeader('Content-type', 'application/json');
+			/* request.setRequestHeader('Content-type', 'multipart/form-data'); */
+			//enctype="multipart/form-data";
+
+			const formData = new FormData(form);
+
+			const object = {};
+			formData.forEach(function(value, key) {
+				object[key] = value;
+			});
+
+			const json = JSON.stringify(object);
+
+			request.send(json);
+
+			/* request.send(formData); */
+
+			request.addEventListener('load', () => {
+				if (request.status === 200) {
+					console.log(request.response);
+					showThanksModal(message.success);
+					form.reset();				
+					statusMessage.remove();
+				} else {
+					showThanksModal(message.failure);
+				}
+			});
+		});
+	}
+
+	forms.forEach(item => {
+		postData(item);
+	});
+
+
+
+
+	//Красиве оповіщення користувача
+
+	function showThanksModal(message) {
+		const prevModalDialog = document.querySelector('.modal__dialog');
+
+		prevModalDialog.classList.add('hide');
+		openModalWindow();
+
+		const thanksModal = document.createElement('div');
+		thanksModal.classList.add('modal__dialog');
+		thanksModal.innerHTML = `
+			<div class="modal__content">
+			<div data-close class="modal__close">&times;</div>
+			<div class="modal__title">${message}</div>
+			</div>
+		`;
+
+		document.querySelector('.modal').append(thanksModal);
+		setTimeout(() => {
+			thanksModal.remove();
+			prevModalDialog.classList.add('show');
+			prevModalDialog.classList.remove('hide');
+			closeModalWindow();
+		}, 4000);
+	}
+	
 
 });
 
