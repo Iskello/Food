@@ -294,7 +294,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
 
-		
+
 	/* new MenuCard(
 		'img/tabs/vegy.jpg',
 		'vegy',
@@ -330,6 +330,8 @@ window.addEventListener('DOMContentLoaded', () => {
 	
 
 
+	
+	
 
 
 	//Відправка даних з форми
